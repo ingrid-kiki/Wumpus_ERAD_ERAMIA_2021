@@ -1,39 +1,37 @@
 import Action
 
 ##########################################################################################
-
+# Classe que representa um nó (célula) do mundo Wumpus
 class Wumpus_Node:
 
     def __init__(self,row,col):
         self.row = row
         self.column = col
-        self.name = str(row) + "," + str(col)
-        self.right = ""
-        self.left = ""
-        self.up = ""
-        self.down = ""
-
-
+        self.name = str(row) + "," + str(col)  # Nome do nó (ex: "1,1")
+        self.right = ""  # Estado à direita
+        self.left = ""   # Estado à esquerda
+        self.up = ""     # Estado acima
+        self.down = ""   # Estado abaixo
 
     def __repr__(self):
+        # Representação textual do nó
         return ("(Name : " + str(self.name) + " , " +
                 " left : " + self.left + " , " + " Right : " + self.right + " , " +
                 " Up : " + self.up + " , " + " Down : " + self.down + " , " + ")")
 
-        
 ##########################################################################################        
-        
+# Classe que representa o jogador/agente no mundo Wumpus
 class Wumpus_Player:
 
     def __init__(self , state , direction):
-        self.current_state = state
-        self.current_direction = direction
-
-        self.has_gold = False
-        self.has_killed_wumpus = False
-        self.is_leaving = False
+        self.current_state = state           # Estado atual (posição)
+        self.current_direction = direction   # Direção atual
+        self.has_gold = False               # Se já pegou o ouro
+        self.has_killed_wumpus = False      # Se já matou o Wumpus
+        self.is_leaving = False             # Se está saindo do mundo
 
     def move(self,states):
+        # Move o agente para o próximo estado, se possível
         if self.current_direction=="Right" and states[self.current_state].right!="W":
             self.current_state=states[self.current_state].right
         elif self.current_direction=="Left" and states[self.current_state].left!="W":
@@ -44,6 +42,7 @@ class Wumpus_Player:
             self.current_state=states[self.current_state].down
 
     def turn_left(self):
+        # Gira o agente para a esquerda
         if self.current_direction=="Right":
             self.current_direction="Up"
         elif self.current_direction=="Left":
@@ -54,6 +53,7 @@ class Wumpus_Player:
             self.current_direction="Right"
 
     def turn_right(self):
+        # Gira o agente para a direita
         if self.current_direction=="Right":
             self.current_direction="Down"
         elif self.current_direction=="Left":
@@ -64,24 +64,23 @@ class Wumpus_Player:
             self.current_direction="Left"
 
     def __repr__(self):
+        # Representação textual do agente
         return ("Current State : " + str(self.current_state.name) + " , " +
                 "Current Direction : " + str(self.current_direction))
 
-
-        
 ############################################################################# 
-        
+# Classe que representa todos os estados do mundo Wumpus
 class Wumpus_States:
 
     def __init__(self):
-        self.states = dict()
-        self.visited_states = []
-        self.unvisited_safe_states = []
-        self.max_row = 8 #-1
-        self.max_col = 8 # -1
-        
+        self.states = dict()                # Dicionário de estados
+        self.visited_states = []            # Lista de estados visitados
+        self.unvisited_safe_states = []     # Lista de estados seguros não visitados
+        self.max_row = 8                    # Número máximo de linhas
+        self.max_col = 8                    # Número máximo de colunas
 
     def add_state(self,node):
+        # Adiciona um novo estado ao mundo e define suas conexões
         if self.max_col!=-1 and node.column==self.max_col:
             node.right="W"
         else:
@@ -102,30 +101,30 @@ class Wumpus_States:
         else:
             node.down=str(node.row-1)+","+str(node.column)
         
-
         self.states[node.name]=node
         if node.name not in self.visited_states:
             self.visited_states.append(node.name)
-        
-
 
     def __repr__(self):
+        # Representação textual dos estados
         return ("States : " + str(self.states.keys()) + " , " +
                 " Visited States : " + str(self.visited_states))
 
 #########################################################################################
-
+# Base de conhecimento para lógica do agente
 class Knowledge_Base:
     
     def __init__(self):
         self.KB=[]
         
     def add(self,sentence):
+        # Adiciona uma sentença à base de conhecimento
         if sentence not in self.KB:
             self.KB.append(sentence)
             self.KB=sorted(self.KB,key=lambda x:len(x))
         
     def check(self,query):
+        # Verifica se uma query está na base de conhecimento
         KB_temp=[[item2 for item2 in item] for item in self.KB]
         KB_temp.append(query)
         KB_temp=sorted(KB_temp,key=lambda x:len(x))
@@ -138,6 +137,7 @@ class Knowledge_Base:
         return False           
                 
     def compare(self,Query1,Query2):
+        # Compara duas queries para resolução lógica
         if len(Query1)==1:    
             for item in Query2:
                 if Query1[0][0]=="~" and item[0:]==Query1[0][1:]:
@@ -146,6 +146,7 @@ class Knowledge_Base:
                     Query2.remove(item)
                     
     def remove(self,sentence):
+        # Remove uma sentença da base de conhecimento
         for item1 in self.KB:
             for item2 in item1:
                 if item2==sentence or item2==("~"+sentence):
@@ -154,9 +155,9 @@ class Knowledge_Base:
                 self.KB.remove(item1)        
 
 ############################################################################################
-
 from queue import PriorityQueue
 
+# Classe para busca de custo uniforme (unicost)
 class Cost_Search:
     def __init__(self,graph,start,goals,visited_states,current_direction):
         self.start=start
@@ -166,6 +167,7 @@ class Cost_Search:
         self.graph=graph
         
     def unicost(self):
+        # Busca caminho de menor custo até um dos objetivos
         q = PriorityQueue()
         expansion = [[0,self.current_direction,self.start,[self.start]]]
         if self.start in self.goals:
@@ -189,8 +191,6 @@ class Cost_Search:
                     q.put([cost,"Down",self.graph[self.start].down,[self.start]+[self.graph[self.start].down]])
         
         while True:
-
-            
             current=q.get()
             expansion.append(current)
             if current[2] in self.goals:
@@ -220,8 +220,8 @@ class Cost_Search:
                                
         return [expansion[-1][0],expansion[-1][3][1:]]  
             
- 
     def movement_cost(self,current,next):
+        # Calcula o custo de movimentação entre direções
         if current==next:
             return 1
         elif current=="Right":
@@ -246,40 +246,38 @@ class Cost_Search:
                 return 2
 
 ##################################################################################################################################
-
+# Classe principal do agente lógico (MyAI)
 class MyAI ():
     def __init__ ( self ):
-        self.states = Wumpus_States()
-        self.states.add_state(Wumpus_Node(1,1))
-        self.player = Wumpus_Player("1,1","Right")
-        self.KB=Knowledge_Base()
-        self.KB.add(["~P1,1"])
-        self.KB.add(["~W1,1"])
-        self.wumpus_dead=False
+        self.states = Wumpus_States()           # Estados do mundo
+        self.states.add_state(Wumpus_Node(1,1)) # Estado inicial
+        self.player = Wumpus_Player("1,1","Right") # Agente começa em (1,1) virado para a direita
+        self.KB=Knowledge_Base()                # Base de conhecimento
+        self.KB.add(["~P1,1"])                 # Não há poço na origem
+        self.KB.add(["~W1,1"])                 # Não há Wumpus na origem
+        self.wumpus_dead=False                 # Estado do Wumpus
         self.wumpus_directions = ["Right","Left","Up","Down"]
-        self.arrow_shot = False
-        self.exit = False
-        self.moves = []
-        self.killing_wumpus = False
-        self.start_stench = False
-
-
+        self.arrow_shot = False                # Se já atirou a flecha
+        self.exit = False                      # Se está saindo do mundo
+        self.moves = []                        # Lista de movimentos planejados
+        self.killing_wumpus = False            # Se está tentando matar o Wumpus
+        self.start_stench = False              # Se começou a sentir fedor
 
     def getAction( self, stench, breeze, glitter, bump, scream ):
-        
-        
+        # Função principal que decide a ação do agente baseado nas percepções
+
         if bump:
-                self.handle_bump()
-        
-        
+            self.handle_bump()
+
         current_node=self.states.states[self.player.current_state]
         
+        # Estratégia para atirar a flecha se sentir fedor na origem
         if current_node.name == "1,1" and stench and not breeze and not self.arrow_shot and not self.exit:
             self.arrow_shot=True
             self.start_stench = True
             return Action.SHOOT
             
-        
+        # Se ouviu o grito do Wumpus morrendo
         if scream:
             self.start_stench=False
             self.clear_base()
@@ -304,7 +302,7 @@ class MyAI ():
             self.KB.add(["W2,1"])
             self.KB.add(["~W1,2"])
 
-            
+        # Atualiza base de conhecimento e estados conforme percepções
         if not self.exit and not self.killing_wumpus:
             if not self.wumpus_dead:
                 if stench:
@@ -317,10 +315,9 @@ class MyAI ():
             else:
                 self.handle_no_breeze(current_node) 
             
-            
             self.safe_check(current_node)
             
-            
+            # Planeja movimentos: pegar ouro, explorar ou sair
             if not self.killing_wumpus:
                 if glitter:
                     self.exit = True
@@ -332,14 +329,13 @@ class MyAI ():
                     search=Cost_Search(self.states.states,self.player.current_state,self.states.unvisited_safe_states,self.states.visited_states,self.player.current_direction)
                     cost_path = search.unicost()
                     self.moves = self.move_list(cost_path[1])
-                    
                 else:
                     self.exit = True
                     search=Cost_Search(self.states.states,self.player.current_state,["1,1"],self.states.visited_states,self.player.current_direction)
                     cost_path = search.unicost()
                     self.moves = self.move_list(cost_path[1])
 
-        
+        # Executa o próximo movimento planejado
         move=self.moves.pop(0)
         if move=="l":
             self.player.turn_left()
@@ -356,8 +352,8 @@ class MyAI ():
             return Action.CLIMB
         elif move=="g":
             return Action.GRAB
-        
-        
+
+    # Limpa sentenças relacionadas ao Wumpus da base de conhecimento
     def clear_base(self):
         to_remove=[]
         for item in self.KB.KB:
@@ -365,8 +361,8 @@ class MyAI ():
                 to_remove.append(item)
         for item in to_remove:
             self.KB.KB.remove(item)
-    
-    
+
+    # Verifica e planeja matar o Wumpus se possível
     def wumpus_check(self,current_node):
         row = current_node.row
         col = current_node.column
@@ -383,7 +379,8 @@ class MyAI ():
             if current_node.down!="W":
                 if self.KB.check(["W"+str(row)+","+str(col-1)]) and self.KB.check(["~S"+str(row-1)+","+str(col-1)]) or self.KB.check(["W"+str(row)+","+str(col+1)]) and self.KB.check(["~S"+str(row-1)+","+str(col+1)]):
                     self.kill_wumpus("Down")
-            
+
+    # Planeja movimentos para matar o Wumpus em determinada direção
     def kill_wumpus(self,direction):
         self.killing_wumpus=True
         self.moves=[]
@@ -439,9 +436,8 @@ class MyAI ():
                 self.moves.insert(0,"l")
             elif self.player.current_direction=="Down":
                 self.moves.insert(0,"s")
-            
-        
-        
+
+    # Atualiza lista de estados seguros não visitados
     def safe_check(self,current_node):
         if not self.wumpus_dead:
             if current_node.right!="W" and current_node.right not in self.states.visited_states and current_node.right not in self.states.unvisited_safe_states:
@@ -469,7 +465,8 @@ class MyAI ():
             if current_node.down!="W" and current_node.down not in self.states.visited_states and current_node.down not in self.states.unvisited_safe_states:
                 if self.KB.check(["P"+current_node.down]):
                     self.states.unvisited_safe_states.append(current_node.down)    
-    
+
+    # Atualiza limites do mundo ao bater em uma parede
     def handle_bump(self):
         if self.player.current_direction=="Right":
             self.states.states.pop(self.player.current_state)
@@ -504,8 +501,8 @@ class MyAI ():
                     to_remove.append(item)
             for item in to_remove:
                 self.states.unvisited_safe_states.remove(item)
-            
-            
+
+    # Atualiza base de conhecimento ao sentir fedor
     def handle_stench(self,current_node):
         sentence = []
         if current_node.right not in self.states.visited_states and current_node.right!="W":
@@ -519,6 +516,7 @@ class MyAI ():
         self.KB.add(sentence)
         self.KB.add(["S"+current_node.name])
         
+    # Atualiza base de conhecimento ao sentir brisa
     def handle_breeze(self,current_node):
         sentence = []
         if current_node.right not in self.states.visited_states and current_node.right!="W":
@@ -532,6 +530,7 @@ class MyAI ():
         self.KB.add(sentence)
         self.KB.add(["B"+current_node.name])
     
+    # Atualiza base de conhecimento ao NÃO sentir brisa
     def handle_no_breeze(self,current_node):
         if current_node.right not in self.states.visited_states and current_node.right!="W":
             self.KB.add(["~P"+current_node.right]) 
@@ -542,6 +541,7 @@ class MyAI ():
         if current_node.down not in self.states.visited_states and current_node.down!="W":
             self.KB.add(["~P"+current_node.down]) 
             
+    # Atualiza base de conhecimento ao NÃO sentir fedor
     def handle_no_stench(self,current_node):
         if current_node.right not in self.states.visited_states and current_node.right!="W":
             self.KB.add(["~W"+current_node.right]) 
@@ -552,6 +552,7 @@ class MyAI ():
         if current_node.down not in self.states.visited_states and current_node.down!="W":
             self.KB.add(["~W"+current_node.down]) 
             
+    # Move o agente para o próximo estado
     def walk(self):
         self.player.move(self.states.states)
         row_col=self.player.current_state.split(",")
@@ -560,6 +561,7 @@ class MyAI ():
         if state.name in self.states.unvisited_safe_states:
             self.states.unvisited_safe_states.remove(state.name)
             
+    # Gera lista de movimentos para seguir um caminho
     def move_list(self,path):
         direction = self.player.current_direction
         state = self.player.current_state
