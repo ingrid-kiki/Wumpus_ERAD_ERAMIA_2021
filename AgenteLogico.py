@@ -12,50 +12,50 @@ import LogicRobot
         self.bump = False
         self.scream = False
 '''
+# Classe que representa um agente lógico (baseado em regras/lógica)
 class AgentLogico(AgentInt.AgentInt):
-    safe_way = []
-    percept_gold = []
-    percept_breeze = []
-    percept_stench = []
-    wumpus_alive = False
-    percept_scream_location = None
-    has_gold = False
-    agente_logico = LogicRobot.MyAI()
-    #percept_
+    safe_way = []                  # Caminhos considerados seguros
+    percept_gold = []              # Percepções de ouro
+    percept_breeze = []            # Percepções de brisa
+    percept_stench = []            # Percepções de fedor
+    wumpus_alive = False           # Estado do Wumpus (vivo/morto)
+    percept_scream_location = None # Localização onde ouviu o grito
+    has_gold = False               # Se o agente já pegou o ouro
+    agente_logico = LogicRobot.MyAI() # Instância do agente lógico
 
     def __init__(self):
         super().__init__()
-        self.agente_logico = LogicRobot.MyAI()
-        #self.size = size
+        self.agente_logico = LogicRobot.MyAI() # Inicializa o agente lógico
 
-    def process(self,percept):
-        stench = percept[0]
-        breeze = percept[1]
-        glitter = percept[2]
-        bump = percept[3]
-        scream = percept[4]
+    # Função principal que processa as percepções do ambiente
+    def process(self, percept):
+        stench = percept[0]   # Fedor (Wumpus por perto)
+        breeze = percept[1]   # Brisa (Poço por perto)
+        glitter = percept[2]  # Brilho (Ouro na sala)
+        bump = percept[3]     # Colisão (bateu na parede)
+        scream = percept[4]   # Grito (Wumpus morreu)
+        # Obtém a ação do agente lógico baseado nas percepções
         action = self.agente_logico.getAction(stench, breeze, glitter, bump, scream)
-        #action = Action.GOFORWARD
-        
+        # Retorna a ação escolhida
         return action
 
-    def input_key(self,evento):
-    
+    # Mapeia o valor do movimento para a ação do agente
+    def input_key(self, evento):
         if(evento == 0):
-            return Action.GOFORWARD
+            return Action.GOFORWARD   # Avançar
         if(evento == 1):
-            return Action.TURNLEFT
+            return Action.TURNLEFT    # Virar à esquerda
         if(evento == 2):
-            return Action.TURNRIGHT
+            return Action.TURNRIGHT   # Virar à direita
         if(evento == 3):
-            return Action.GRAB
+            return Action.GRAB        # Pegar ouro
         if(evento == 4):
-            return Action.SHOOT
+            return Action.SHOOT       # Atirar flecha
         if(evento == 5):
-            return Action.CLIMB
+            return Action.CLIMB       # Escalar (sair da caverna)
         if(evento == 6):
-            return Action.UNK
+            return Action.UNK         # Ação desconhecida
         if(evento == 7):
-            return Action.END
+            return Action.END         # Finalizar execução
 
 
