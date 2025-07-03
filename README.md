@@ -5,6 +5,8 @@ Integrantes:<br/>
 - JULIO CEZAR GONÇALVES DE FREITAS<br/>
 - VICTOR SIMOES MARTINS<br/>
 
+> MARTINS, Victor S.; FREITAS, Julio Cezar Gonçalves de; MENDES, Ingrid Nery; TEIXEIRA, Otávio Noura. **Algoritmos Genéticos aplicado ao mundo de Wumpus: uma comparação entre agentes baseados em regras e agentes inteligentes**. In: ESCOLA REGIONAL DE ALTO DESEMPENHO NORTE 2 (ERAD-NO2) E ESCOLA REGIONAL DE APRENDIZADO DE MÁQUINA E INTELIGÊNCIA ARTIFICIAL NORTE 2 (ERAMIA-NO2), 1. , 2021, Online. Anais [...]. Porto Alegre: Sociedade Brasileira de Computação, 2021 . p. 33-36. DOI: <https://doi.org/10.5753/erad-no2.2021.18677>
+
 #################################
 
 # Simulação do Agente Lógico
